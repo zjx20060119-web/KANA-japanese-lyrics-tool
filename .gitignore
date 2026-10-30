@@ -23,6 +23,7 @@ frontend/.env*
 frontend/*.tsbuildinfo
 frontend/public/fonts/CALIST.TTF
 frontend/public/fonts/yumin.ttf
+frontend/public/initial-library.json
 
 # Python
 backend/.venv/

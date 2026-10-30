@@ -9,7 +9,7 @@ import {
   duplicateSavedDocument,
   listSavedDocuments,
   updateSavedDocumentMetadata,
-} from "@/lib/api";
+} from "@/lib/localLibrary";
 import type { SavedDocumentSummary } from "@/lib/types";
 
 function formatDate(value: string | null): string {

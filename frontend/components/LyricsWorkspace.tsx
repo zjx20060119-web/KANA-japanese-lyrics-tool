@@ -8,8 +8,8 @@ import DocumentSyncPanel from "@/components/DocumentSyncPanel";
 import LyricsDisplay from "@/components/LyricsDisplay";
 import LyricsInput from "@/components/LyricsInput";
 import SavedLyricsView from "@/components/SavedLyricsView";
-import { getSavedDocument } from "@/lib/api";
 import { analyzeLyricsLocally } from "@/lib/offlineAnalysisClient";
+import { getSavedDocument } from "@/lib/localLibrary";
 import {
   applyReadingOverrides,
   collectReadingOverrides,

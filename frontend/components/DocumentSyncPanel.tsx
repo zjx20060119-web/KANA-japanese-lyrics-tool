@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { listSavedDocuments, saveLyricsDocument } from "@/lib/api";
+import {
+  listSavedDocuments,
+  saveLyricsDocument,
+} from "@/lib/localLibrary";
 import type { LyricsDocument } from "@/lib/types";
 
 type DocumentSyncPanelProps = {

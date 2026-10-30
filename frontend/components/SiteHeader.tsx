@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import ServiceStatus from "@/components/ServiceStatus";
-
 function WorkbenchIcon() {
   return (
     <svg
@@ -83,7 +81,13 @@ export default function SiteHeader() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <ServiceStatus compact />
+          <span
+            className="inline-flex h-9 items-center gap-2 rounded-full border border-line bg-canvas px-3 text-xs text-muted"
+            title="所有注音和歌词库数据都在本机处理"
+          >
+            <span className="h-2 w-2 rounded-full bg-success" />
+            本地模式
+          </span>
           <span
             aria-hidden="true"
             className="hidden h-8 w-8 place-items-center rounded-full bg-surface text-xs font-medium text-muted sm:grid"

@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { fetchLyricsSource, searchLyrics } from "@/lib/api";
+import {
+  fetchLyricsSource,
+  searchLyrics,
+} from "@/lib/lyricsSourceClient";
 import type {
   LyricsSearchResult,
   LyricsSourceContent,
