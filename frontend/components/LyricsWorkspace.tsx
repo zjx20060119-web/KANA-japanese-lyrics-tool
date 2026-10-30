@@ -8,7 +8,8 @@ import DocumentSyncPanel from "@/components/DocumentSyncPanel";
 import LyricsDisplay from "@/components/LyricsDisplay";
 import LyricsInput from "@/components/LyricsInput";
 import SavedLyricsView from "@/components/SavedLyricsView";
-import { analyzeLyrics, getSavedDocument } from "@/lib/api";
+import { getSavedDocument } from "@/lib/api";
+import { analyzeLyricsLocally } from "@/lib/offlineAnalysisClient";
 import {
   applyReadingOverrides,
   collectReadingOverrides,
@@ -119,8 +120,8 @@ export default function LyricsWorkspace() {
     );
 
     try {
-      const analyzed = await analyzeLyrics(
-        { text: lyrics, title, artist },
+      const analyzed = await analyzeLyricsLocally(
+        { text: lyrics, title, artist, album },
         controller.signal,
       );
       if (controllerRef.current === controller) {
