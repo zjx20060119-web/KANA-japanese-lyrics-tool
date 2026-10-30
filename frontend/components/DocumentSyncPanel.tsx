@@ -121,6 +121,7 @@ export default function DocumentSyncPanel({
 
       <Link
         href="/library"
+        prefetch={false}
         className="ml-auto flex h-9 items-center rounded-full border border-line px-4 text-xs font-medium text-ink hover:bg-surface"
       >
         打开我的歌词库

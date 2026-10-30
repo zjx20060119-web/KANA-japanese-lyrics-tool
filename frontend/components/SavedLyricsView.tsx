@@ -112,6 +112,7 @@ export default function SavedLyricsView({
           >
             <Link
               href="/library"
+              prefetch={false}
               className="flex h-10 items-center rounded-full px-3 text-xs font-medium text-muted transition hover:bg-surface hover:text-ink"
             >
               返回歌词库

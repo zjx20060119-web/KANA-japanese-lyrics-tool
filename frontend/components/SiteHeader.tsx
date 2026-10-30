@@ -69,6 +69,7 @@ export default function SiteHeader() {
           </Link>
           <Link
             href="/library"
+            prefetch={false}
             className={`flex h-9 items-center gap-2 rounded-full px-3 text-xs font-medium transition ${
               isLibrary
                 ? "bg-ink text-white"

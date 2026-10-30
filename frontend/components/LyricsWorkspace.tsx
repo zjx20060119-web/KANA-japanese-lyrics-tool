@@ -325,6 +325,7 @@ export default function LyricsWorkspace() {
           </p>
           <Link
             href="/library"
+            prefetch={false}
             className="mt-5 inline-flex h-10 items-center rounded-full bg-ink px-5 text-xs font-medium text-white hover:bg-[#272727]"
           >
             返回歌词库
