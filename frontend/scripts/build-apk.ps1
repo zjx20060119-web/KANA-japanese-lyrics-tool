@@ -36,6 +36,11 @@ $npxCommand = Get-Command "npx.cmd" -ErrorAction Stop
 
 Push-Location $frontendRoot
 try {
+    & $npmCommand.Source run icons:android
+    if ($LASTEXITCODE -ne 0) {
+        throw "Android icon generation failed."
+    }
+
     & $npmCommand.Source run build:web
     if ($LASTEXITCODE -ne 0) {
         throw "Static web build failed."
