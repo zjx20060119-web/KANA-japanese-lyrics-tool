@@ -1,0 +1,37 @@
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor settings
+.idea/
+.vscode/
+
+# Logs and runtime files
+*.log
+*.pid
+.runtime/
+obsidian-sync-config.json
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.env*
+!frontend/.env.local.example
+frontend/*.tsbuildinfo
+frontend/public/fonts/CALIST.TTF
+frontend/public/fonts/yumin.ttf
+
+# Python
+backend/.venv/
+backend/.env*
+!backend/.env.example
+backend/data/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+

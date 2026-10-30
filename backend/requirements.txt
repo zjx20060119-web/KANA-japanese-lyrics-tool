@@ -1,0 +1,5 @@
+fastapi==0.143.3
+sudachidict_core==20261015
+sudachipy==0.7.0
+uvicorn[standard]==0.54.0
+
