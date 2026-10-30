@@ -11,6 +11,7 @@
     "build:apk": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-apk.ps1",
     "cap:sync": "npm run build:web && npx cap sync android",
     "cap:android": "npx cap open android",
+    "icons:android": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/generate-android-icons.ps1",
     "start": "next start",
     "lint": "eslint"
   },
