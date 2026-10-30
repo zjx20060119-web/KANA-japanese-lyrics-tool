@@ -3,6 +3,7 @@ import {
   existsSync,
   mkdirSync,
   readdirSync,
+  unlinkSync,
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -35,6 +36,12 @@ for (const fileName of readdirSync(dictionarySource)) {
       join(dictionarySource, fileName),
       join(dictionaryTarget, fileName),
     );
+  }
+}
+
+for (const fileName of readdirSync(dictionaryTarget)) {
+  if (fileName.endsWith(".dat")) {
+    unlinkSync(join(dictionaryTarget, fileName));
   }
 }
 

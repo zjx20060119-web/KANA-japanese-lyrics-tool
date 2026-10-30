@@ -125,6 +125,26 @@ japanese-lyrics-tool/
 
 如果端口已经被其他程序占用，停止脚本会跳过该进程，不会误杀其他程序。
 
+### 离线 Android APK
+
+此副本使用浏览器端 Kuromoji 和本地 IndexedDB 歌词库，静态页面由 Capacitor 装入 Android 应用。构建命令：
+
+```powershell
+cd frontend
+npm install
+npm run build:apk
+```
+
+构建成功后，APK 会复制到项目根目录：
+
+```text
+KANA-debug.apk
+```
+
+构建需要 JDK 21、Android SDK（API 36）和 Android Build Tools。脚本会自动识别 `JAVA_HOME`、`ANDROID_HOME`，以及本机的 `.tools/` 构建环境。
+
+当前产物是个人安装使用的 debug 签名 APK，不是 Google Play 发布包。离线歌词库保存在 WebView 的 IndexedDB 中；`initial-library.json` 仅用于从原 SQLite 库迁移个人歌词，已加入 `.gitignore`，不会提交到 GitHub。`CALIST.TTF` 和 `yumin.ttf` 也只在本地构建时打包，分发 APK 前应替换为有相应分发授权的字体。
+
 ### 同步到 Obsidian（Windows）
 
 默认同步目录为：

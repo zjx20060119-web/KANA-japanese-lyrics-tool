@@ -3,6 +3,7 @@ import {
   type IpadicFeatures,
   type Tokenizer,
 } from "kuromoji";
+import BrowserDictionaryLoader from "kuromoji/src/loader/BrowserDictionaryLoader";
 
 import { buildLineRomaji } from "@/lib/romaji";
 import type {
@@ -19,6 +20,41 @@ const KATAKANA_START = 0x30a1;
 const KATAKANA_END = 0x30f6;
 
 let tokenizerPromise: Promise<Tokenizer<IpadicFeatures>> | null = null;
+
+const originalLoadArrayBuffer =
+  BrowserDictionaryLoader.prototype.loadArrayBuffer;
+
+BrowserDictionaryLoader.prototype.loadArrayBuffer = function (
+  url,
+  callback,
+) {
+  originalLoadArrayBuffer.call(this, url, (error, buffer) => {
+    if (!error && buffer) {
+      callback(null, buffer);
+      return;
+    }
+
+    const plainDictionaryUrl = url.replace(/\.gz$/, "");
+    void fetch(plainDictionaryUrl, { cache: "force-cache" })
+      .then((response) => {
+        if (!response.ok) {
+          throw error ?? new Error(
+            `离线词典加载失败（HTTP ${response.status}）。`,
+          );
+        }
+        return response.arrayBuffer();
+      })
+      .then((plainBuffer) => callback(null, plainBuffer))
+      .catch((fallbackError: unknown) => {
+        callback(
+          fallbackError instanceof Error
+            ? fallbackError
+            : new Error("离线词典加载失败。"),
+          null,
+        );
+      });
+  });
+};
 
 function createId(prefix: string): string {
   const random = globalThis.crypto?.randomUUID?.()

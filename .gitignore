@@ -11,6 +11,8 @@ Desktop.ini
 *.log
 *.pid
 .runtime/
+.tools/
+KANA-debug.apk
 obsidian-sync-config.json
 
 # Frontend
