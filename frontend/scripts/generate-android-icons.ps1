@@ -5,20 +5,20 @@ $frontendRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 $projectRoot = Resolve-Path (Join-Path $frontendRoot "..")
 $resourceRoot = Join-Path $frontendRoot "android\app\src\main\res"
 $docsRoot = Join-Path $projectRoot "docs"
-$red = [System.Drawing.Color]::FromArgb(255, 255, 0, 0)
+$appRouteRoot = Join-Path $frontendRoot "app"
+$glyphPath = Join-Path $frontendRoot "assets\kana-glyph.png"
 $white = [System.Drawing.Color]::White
 $border = [System.Drawing.Color]::FromArgb(255, 226, 226, 226)
 $paper = [System.Drawing.Color]::FromArgb(255, 247, 244, 237)
 $ink = [System.Drawing.Color]::FromArgb(255, 20, 20, 20)
 $muted = [System.Drawing.Color]::FromArgb(255, 82, 82, 82)
+$red = [System.Drawing.Color]::FromArgb(255, 255, 0, 0)
 
 function ConvertFrom-CodePoints {
     param([int[]]$CodePoints)
     return -join ($CodePoints | ForEach-Object { [char]$_ })
 }
 
-$rubyText = ConvertFrom-CodePoints @(0x3046, 0x305F)
-$lyricsGlyph = ConvertFrom-CodePoints @(0x6B4C)
 $subtitleText = ConvertFrom-CodePoints @(
     0x65E5,
     0x8BED,
@@ -100,7 +100,7 @@ function Get-InkBounds {
     }
 
     if ($maxX -lt $minX -or $maxY -lt $minY) {
-        throw "The icon artwork contains no visible pixels."
+        throw "The kana glyph contains no visible pixels."
     }
 
     return New-Object System.Drawing.RectangleF(
@@ -111,88 +111,27 @@ function Get-InkBounds {
     )
 }
 
-function New-SignatureArtwork {
-    $canvasWidth = 1400
-    $canvasHeight = 1400
-    $bitmap = New-Object System.Drawing.Bitmap(
-        $canvasWidth,
-        $canvasHeight,
-        [System.Drawing.Imaging.PixelFormat]::Format32bppArgb
-    )
-    $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
-    try {
-        $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
-        $graphics.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
-        $graphics.Clear([System.Drawing.Color]::Transparent)
-
-        $brush = New-Object System.Drawing.SolidBrush($red)
-        $format = New-Object System.Drawing.StringFormat
-        $format.Alignment = [System.Drawing.StringAlignment]::Center
-        $format.LineAlignment = [System.Drawing.StringAlignment]::Center
-        $rubyFont = New-Object System.Drawing.Font(
-            "Yu Mincho",
-            118,
-            [System.Drawing.FontStyle]::Regular,
-            [System.Drawing.GraphicsUnit]::Pixel
-        )
-        $lyricsFont = New-Object System.Drawing.Font(
-            "Yu Mincho",
-            690,
-            [System.Drawing.FontStyle]::Regular,
-            [System.Drawing.GraphicsUnit]::Pixel
-        )
-        try {
-            $graphics.DrawString(
-                $rubyText,
-                $rubyFont,
-                $brush,
-                (New-Object System.Drawing.RectangleF(0, 150, $canvasWidth, 240)),
-                $format
-            )
-            $graphics.DrawString(
-                $lyricsGlyph,
-                $lyricsFont,
-                $brush,
-                (New-Object System.Drawing.RectangleF(0, 350, $canvasWidth, 850)),
-                $format
-            )
-        } finally {
-            $rubyFont.Dispose()
-            $lyricsFont.Dispose()
-            $format.Dispose()
-            $brush.Dispose()
-        }
-    } finally {
-        $graphics.Dispose()
-    }
-
-    return [pscustomobject]@{
-        Bitmap = $bitmap
-        Bounds = Get-InkBounds $bitmap
-    }
-}
-
-function Draw-CenteredArtwork {
+function Draw-CenteredGlyph {
     param(
         [System.Drawing.Graphics]$Graphics,
-        $Artwork,
+        [System.Drawing.Bitmap]$Glyph,
+        [System.Drawing.RectangleF]$Bounds,
         [float]$CenterX,
         [float]$CenterY,
-        [float]$TargetInkHeight
+        [float]$TargetWidth
     )
-    $sourceBounds = $Artwork.Bounds
-    $aspect = $sourceBounds.Width / $sourceBounds.Height
-    $targetWidth = $TargetInkHeight * $aspect
+    $aspect = $Bounds.Width / $Bounds.Height
+    $targetHeight = $TargetWidth / $aspect
     $destination = New-Object System.Drawing.RectangleF(
-        ($CenterX - $targetWidth / 2),
-        ($CenterY - $TargetInkHeight / 2),
-        $targetWidth,
-        $TargetInkHeight
+        ($CenterX - $TargetWidth / 2),
+        ($CenterY - $targetHeight / 2),
+        $TargetWidth,
+        $targetHeight
     )
     $Graphics.DrawImage(
-        $Artwork.Bitmap,
+        $Glyph,
         $destination,
-        $sourceBounds,
+        $Bounds,
         [System.Drawing.GraphicsUnit]::Pixel
     )
 }
@@ -236,7 +175,8 @@ function New-IconBitmap {
         [int]$Size,
         [ValidateSet("legacy", "round", "foreground")]
         [string]$Variant,
-        $Artwork
+        [System.Drawing.Bitmap]$Glyph,
+        [System.Drawing.RectangleF]$GlyphBounds
     )
     $bitmap = New-Object System.Drawing.Bitmap(
         $Size,
@@ -252,12 +192,30 @@ function New-IconBitmap {
 
         if ($Variant -eq "legacy") {
             Draw-IconShape $graphics $Size "legacy"
-            Draw-CenteredArtwork $graphics $Artwork ($Size / 2) ($Size / 2) ($Size * 0.64)
+            Draw-CenteredGlyph `
+                $graphics `
+                $Glyph `
+                $GlyphBounds `
+                ($Size / 2) `
+                ($Size / 2) `
+                ($Size * 0.78)
         } elseif ($Variant -eq "round") {
             Draw-IconShape $graphics $Size "round"
-            Draw-CenteredArtwork $graphics $Artwork ($Size / 2) ($Size / 2) ($Size * 0.60)
+            Draw-CenteredGlyph `
+                $graphics `
+                $Glyph `
+                $GlyphBounds `
+                ($Size / 2) `
+                ($Size / 2) `
+                ($Size * 0.68)
         } else {
-            Draw-CenteredArtwork $graphics $Artwork ($Size / 2) ($Size / 2) ($Size * 0.48)
+            Draw-CenteredGlyph `
+                $graphics `
+                $Glyph `
+                $GlyphBounds `
+                ($Size / 2) `
+                ($Size / 2) `
+                ($Size * 0.54)
         }
     } finally {
         $graphics.Dispose()
@@ -270,12 +228,13 @@ function Save-Icon {
         [int]$Size,
         [string]$Variant,
         [string]$RelativePath,
-        $Artwork
+        [System.Drawing.Bitmap]$Glyph,
+        [System.Drawing.RectangleF]$GlyphBounds
     )
     $path = Join-Path $resourceRoot $RelativePath
     $directory = Split-Path -Parent $path
     New-Item -ItemType Directory -Force -Path $directory | Out-Null
-    $bitmap = New-IconBitmap $Size $Variant $Artwork
+    $bitmap = New-IconBitmap $Size $Variant $Glyph $GlyphBounds
     try {
         $bitmap.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
     } finally {
@@ -287,7 +246,8 @@ function New-SplashBitmap {
     param(
         [int]$Width,
         [int]$Height,
-        $Artwork
+        [System.Drawing.Bitmap]$Glyph,
+        [System.Drawing.RectangleF]$GlyphBounds
     )
     $bitmap = New-Object System.Drawing.Bitmap(
         $Width,
@@ -321,7 +281,13 @@ function New-SplashBitmap {
             $fill.Dispose()
             $path.Dispose()
         }
-        Draw-CenteredArtwork $graphics $Artwork ($Width / 2) ($Height / 2) ($iconSize * 0.64)
+        Draw-CenteredGlyph `
+            $graphics `
+            $Glyph `
+            $GlyphBounds `
+            ($Width / 2) `
+            ($Height / 2) `
+            ($iconSize * 0.78)
     } finally {
         $graphics.Dispose()
     }
@@ -333,12 +299,13 @@ function Save-Splash {
         [int]$Width,
         [int]$Height,
         [string]$RelativePath,
-        $Artwork
+        [System.Drawing.Bitmap]$Glyph,
+        [System.Drawing.RectangleF]$GlyphBounds
     )
     $path = Join-Path $resourceRoot $RelativePath
     $directory = Split-Path -Parent $path
     New-Item -ItemType Directory -Force -Path $directory | Out-Null
-    $bitmap = New-SplashBitmap $Width $Height $Artwork
+    $bitmap = New-SplashBitmap $Width $Height $Glyph $GlyphBounds
     try {
         $bitmap.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
     } finally {
@@ -347,13 +314,20 @@ function Save-Splash {
 }
 
 function Save-BrandAssets {
-    param($Artwork)
+    param(
+        [System.Drawing.Bitmap]$Glyph,
+        [System.Drawing.RectangleF]$GlyphBounds
+    )
     New-Item -ItemType Directory -Force -Path $docsRoot | Out-Null
 
-    $appIcon = New-IconBitmap 512 "legacy" $Artwork
+    $appIcon = New-IconBitmap 512 "legacy" $Glyph $GlyphBounds
     try {
         $appIcon.Save(
             (Join-Path $docsRoot "app-icon.png"),
+            [System.Drawing.Imaging.ImageFormat]::Png
+        )
+        $appIcon.Save(
+            (Join-Path $appRouteRoot "icon.png"),
             [System.Drawing.Imaging.ImageFormat]::Png
         )
     } finally {
@@ -371,7 +345,7 @@ function Save-BrandAssets {
         $graphics.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
         $graphics.Clear($paper)
 
-        $socialIcon = New-IconBitmap 288 "legacy" $Artwork
+        $socialIcon = New-IconBitmap 288 "legacy" $Glyph $GlyphBounds
         try {
             $graphics.DrawImage($socialIcon, 96, 176, 288, 288)
         } finally {
@@ -457,30 +431,32 @@ $foregroundSizes = @{
     "xxxhdpi" = 432
 }
 
-$artwork = New-SignatureArtwork
+$glyph = [System.Drawing.Bitmap]::FromFile($glyphPath)
 try {
+    $glyphBounds = Get-InkBounds $glyph
+
     foreach ($density in $iconSizes.Keys) {
         $size = $iconSizes[$density]
         $foregroundSize = $foregroundSizes[$density]
-        Save-Icon $size "legacy" "mipmap-$density\ic_launcher.png" $artwork
-        Save-Icon $size "round" "mipmap-$density\ic_launcher_round.png" $artwork
-        Save-Icon $foregroundSize "foreground" "mipmap-$density\ic_launcher_foreground.png" $artwork
+        Save-Icon $size "legacy" "mipmap-$density\ic_launcher.png" $glyph $glyphBounds
+        Save-Icon $size "round" "mipmap-$density\ic_launcher_round.png" $glyph $glyphBounds
+        Save-Icon $foregroundSize "foreground" "mipmap-$density\ic_launcher_foreground.png" $glyph $glyphBounds
     }
 
-    Save-Splash 480 320 "drawable\splash.png" $artwork
-    Save-Splash 480 320 "drawable-land-mdpi\splash.png" $artwork
-    Save-Splash 800 480 "drawable-land-hdpi\splash.png" $artwork
-    Save-Splash 1280 720 "drawable-land-xhdpi\splash.png" $artwork
-    Save-Splash 1600 960 "drawable-land-xxhdpi\splash.png" $artwork
-    Save-Splash 1920 1280 "drawable-land-xxxhdpi\splash.png" $artwork
-    Save-Splash 320 480 "drawable-port-mdpi\splash.png" $artwork
-    Save-Splash 480 800 "drawable-port-hdpi\splash.png" $artwork
-    Save-Splash 720 1280 "drawable-port-xhdpi\splash.png" $artwork
-    Save-Splash 960 1600 "drawable-port-xxhdpi\splash.png" $artwork
-    Save-Splash 1280 1920 "drawable-port-xxxhdpi\splash.png" $artwork
-    Save-BrandAssets $artwork
+    Save-Splash 480 320 "drawable\splash.png" $glyph $glyphBounds
+    Save-Splash 480 320 "drawable-land-mdpi\splash.png" $glyph $glyphBounds
+    Save-Splash 800 480 "drawable-land-hdpi\splash.png" $glyph $glyphBounds
+    Save-Splash 1280 720 "drawable-land-xhdpi\splash.png" $glyph $glyphBounds
+    Save-Splash 1600 960 "drawable-land-xxhdpi\splash.png" $glyph $glyphBounds
+    Save-Splash 1920 1280 "drawable-land-xxxhdpi\splash.png" $glyph $glyphBounds
+    Save-Splash 320 480 "drawable-port-mdpi\splash.png" $glyph $glyphBounds
+    Save-Splash 480 800 "drawable-port-hdpi\splash.png" $glyph $glyphBounds
+    Save-Splash 720 1280 "drawable-port-xhdpi\splash.png" $glyph $glyphBounds
+    Save-Splash 960 1600 "drawable-port-xxhdpi\splash.png" $glyph $glyphBounds
+    Save-Splash 1280 1920 "drawable-port-xxxhdpi\splash.png" $glyph $glyphBounds
+    Save-BrandAssets $glyph $glyphBounds
 } finally {
-    $artwork.Bitmap.Dispose()
+    $glyph.Dispose()
 }
 
-Write-Host "Android icons and brand assets generated with centered furigana artwork."
+Write-Host "Android icons and brand assets generated from the Source Han kana glyph."
