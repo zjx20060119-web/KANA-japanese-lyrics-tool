@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import {
   fetchLyricsSource,
+  isLyricsProxyEnabled,
   searchLyrics,
 } from "@/lib/lyricsSourceClient";
 import type {
@@ -46,6 +47,7 @@ export default function LyricsSourceSearch({
   disabled,
   onUseLyrics,
 }: LyricsSourceSearchProps) {
+  const proxyEnabled = isLyricsProxyEnabled();
   const [state, setState] = useState<SearchState>({ phase: "idle" });
   const [loadingSourceId, setLoadingSourceId] = useState<string | null>(null);
   const [selectedSource, setSelectedSource] =
@@ -101,6 +103,10 @@ export default function LyricsSourceSearch({
       }
     } catch (error) {
       if (controllerRef.current === controller) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          setState({ phase: "idle" });
+          return;
+        }
         setState({
           phase: "error",
           message:
@@ -179,28 +185,51 @@ export default function LyricsSourceSearch({
     <div className="mt-5 border-t border-line pt-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm font-medium text-ink">歌词来源</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-medium text-ink">歌词来源</h3>
+            <span className="rounded-full bg-surface px-2 py-0.5 text-[10px] text-muted">
+              {proxyEnabled ? "云端加速" : "直连 LRCLIB"}
+            </span>
+          </div>
           <p className="mt-0.5 text-xs text-muted">
             填写歌名或歌手后搜索
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => void handleSearch()}
-          disabled={disabled || state.phase === "searching"}
-          className="h-9 rounded-full border border-line px-4 text-xs font-medium text-ink transition hover:bg-surface disabled:cursor-wait disabled:opacity-50"
-        >
-          {state.phase === "searching" ? "搜索中…" : "搜索歌词"}
-        </button>
+        <div className="flex items-center gap-2">
+          {state.phase === "searching" && (
+            <button
+              type="button"
+              onClick={() => controllerRef.current?.abort()}
+              className="h-9 rounded-full px-3 text-xs font-medium text-muted transition hover:bg-surface hover:text-ink"
+            >
+              取消
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => void handleSearch()}
+            disabled={disabled || state.phase === "searching"}
+            className="h-9 rounded-full border border-line px-4 text-xs font-medium text-ink transition hover:bg-surface disabled:cursor-wait disabled:opacity-50"
+          >
+            {state.phase === "searching" ? "搜索中…" : "搜索歌词"}
+          </button>
+        </div>
       </div>
 
       {state.phase === "error" && (
-        <p
+        <div
           role="alert"
           className="mt-3 rounded-md border border-brand/20 bg-[#fff5f5] px-3 py-2 text-xs leading-5 text-brand"
         >
-          {state.message}
-        </p>
+          <p>{state.message}</p>
+          <button
+            type="button"
+            onClick={() => void handleSearch()}
+            className="mt-2 rounded-full border border-brand/25 bg-canvas px-3 py-1 text-[11px] font-medium text-brand transition hover:bg-[#fff0f0]"
+          >
+            重试
+          </button>
+        </div>
       )}
 
       {visibleResults.length > 0 && visibleQuery && (

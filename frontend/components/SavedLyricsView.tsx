@@ -1,22 +1,34 @@
 "use client";
 
+import { Capacitor, registerPlugin } from "@capacitor/core";
 import Link from "next/link";
 import { useRef, useState } from "react";
 
+import { useDisplaySettings } from "@/components/DisplaySettingsProvider";
 import RomajiLine from "@/components/RomajiLine";
 import RubyText from "@/components/RubyText";
+import TranslatedLine from "@/components/TranslatedLine";
+import TranslationControls from "@/components/TranslationControls";
+import { TranslationProvider } from "@/components/TranslationProvider";
 import type { LyricsDocument } from "@/lib/types";
+
+type ImageSaverPlugin = {
+  saveImage(options: {
+    base64: string;
+    fileName: string;
+  }): Promise<{
+    uri: string;
+    location?: string;
+    fileName?: string;
+  }>;
+};
+
+const ImageSaver = registerPlugin<ImageSaverPlugin>("ImageSaver");
 
 type SavedLyricsViewProps = {
   document: LyricsDocument;
   onEdit: () => void;
 };
-
-const ROMAJI_GAP = -8;
-const ROW_GAP = 20;
-const LYRIC_SIZE = 25;
-const ROMAJI_SIZE = 13;
-const ROW_PADDING = ROW_GAP / 2;
 
 function getByline(document: LyricsDocument): string {
   const artist = document.artist?.trim();
@@ -40,9 +52,12 @@ export default function SavedLyricsView({
   onEdit,
 }: SavedLyricsViewProps) {
   const byline = getByline(document);
+  const { settings } = useDisplaySettings();
+  const rowPadding = settings.rowGap / 2;
   const captureRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [exportSuccess, setExportSuccess] = useState<string | null>(null);
 
   const exportScreenshot = async () => {
     const target = captureRef.current;
@@ -52,6 +67,7 @@ export default function SavedLyricsView({
 
     setIsExporting(true);
     setExportError(null);
+    setExportSuccess(null);
 
     try {
       await window.document.fonts.ready;
@@ -71,12 +87,25 @@ export default function SavedLyricsView({
           ),
       });
 
-      const link = window.document.createElement("a");
-      link.href = dataUrl;
-      link.download = getExportFileName(document.title);
-      window.document.body.appendChild(link);
-      link.click();
-      link.remove();
+      const fileName = getExportFileName(document.title);
+      if (Capacitor.isNativePlatform()) {
+        const base64 = dataUrl.split(",")[1];
+        if (!base64) {
+          throw new Error("截图数据为空，无法保存。");
+        }
+        const saved = await ImageSaver.saveImage({ base64, fileName });
+        setExportSuccess(
+          `已保存到系统相册：${saved.location ?? "Pictures/KANA"}`,
+        );
+      } else {
+        const link = window.document.createElement("a");
+        link.href = dataUrl;
+        link.download = fileName;
+        window.document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setExportSuccess("截图已开始下载。");
+      }
     } catch (error) {
       setExportError(
         error instanceof Error
@@ -89,10 +118,11 @@ export default function SavedLyricsView({
   };
 
   return (
-    <article
-      data-saved-lyrics-view
-      className="mx-auto w-full max-w-3xl pb-16 pt-2 sm:pt-5"
-    >
+    <TranslationProvider key={document.id} document={document}>
+      <article
+        data-saved-lyrics-view
+        className="mx-auto w-full max-w-3xl pb-[calc(4rem+env(safe-area-inset-bottom))] pt-2 sm:pt-5"
+      >
       <div ref={captureRef} className="bg-white">
         <header className="flex flex-col gap-5 border-b border-line pb-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
@@ -110,6 +140,7 @@ export default function SavedLyricsView({
             data-export-ignore="true"
             className="flex shrink-0 flex-wrap items-center gap-2"
           >
+            <TranslationControls compact />
             <Link
               href="/library"
               prefetch={false}
@@ -136,24 +167,30 @@ export default function SavedLyricsView({
                 key={line.id}
                 data-reader-line-index={line.line_index}
                 style={{
-                  paddingTop: ROW_PADDING,
-                  paddingBottom: ROW_PADDING,
+                  paddingTop: rowPadding,
+                  paddingBottom: rowPadding,
                 }}
               >
                 <div
-                  style={{ fontSize: `${LYRIC_SIZE}px` }}
+                  style={{ fontSize: `${settings.lyricSize}px` }}
                   className="font-japanese break-words leading-[1.75] text-ink [overflow-wrap:anywhere]"
                 >
                   <RubyText segments={line.segments} />
                 </div>
-                <div style={{ marginTop: `${ROMAJI_GAP}px` }}>
-                  <RomajiLine
-                    romaji={line.romaji}
-                    showMarker={false}
-                    variant="reader"
-                    fontSize={ROMAJI_SIZE}
-                  />
-                </div>
+                {settings.showRomaji && (
+                  <div style={{ marginTop: `${settings.romajiGap}px` }}>
+                    <RomajiLine
+                      romaji={line.romaji}
+                      showMarker={false}
+                      variant="reader"
+                      fontSize={settings.romajiSize}
+                    />
+                  </div>
+                )}
+                <TranslatedLine
+                  line={line}
+                  gap={settings.translationGap}
+                />
               </div>
             ),
           )}
@@ -187,8 +224,18 @@ export default function SavedLyricsView({
           {isExporting ? "正在生成截图…" : "导出歌词截图"}
         </button>
         <p className="text-center text-xs leading-5 text-muted">
-          将当前歌名、歌手/专辑和全部歌词保存为 PNG 图片
+          {Capacitor.isNativePlatform()
+            ? "将当前歌词完整保存到系统相册 Pictures/KANA"
+            : "将当前歌名、歌手/专辑和全部歌词下载为 PNG 图片"}
         </p>
+        {exportSuccess && (
+          <p
+            role="status"
+            className="rounded-md border border-success/20 bg-[#f1faf3] px-3 py-2 text-xs text-success"
+          >
+            {exportSuccess}
+          </p>
+        )}
         {exportError && (
           <p
             role="alert"
@@ -198,6 +245,7 @@ export default function SavedLyricsView({
           </p>
         )}
       </section>
-    </article>
+      </article>
+    </TranslationProvider>
   );
 }

@@ -13,7 +13,7 @@ export default function LibraryPage() {
     <main className="min-h-dvh bg-canvas text-ink">
       <SiteHeader />
 
-      <div className="mx-auto w-full max-w-[1500px] px-3 py-5 sm:px-5 lg:px-6">
+      <div className="app-gutter mx-auto w-full max-w-[1500px] pb-[calc(2rem+env(safe-area-inset-bottom))] pt-6 sm:pt-7">
         <LyricsLibrary />
       </div>
     </main>

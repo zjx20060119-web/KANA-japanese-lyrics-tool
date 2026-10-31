@@ -1,4 +1,6 @@
 import LyricsLineItem from "@/components/LyricsLineItem";
+import TranslationControls from "@/components/TranslationControls";
+import { TranslationProvider } from "@/components/TranslationProvider";
 import type {
   AnalysisStatus,
   AnalysisWarning,
@@ -193,6 +195,7 @@ function SuccessState({
           <span className="rounded-full bg-canvas px-2.5 py-1">
             原文保留
           </span>
+          <TranslationControls compact />
         </div>
       </div>
 
@@ -254,7 +257,7 @@ export default function LyricsDisplay({
           </h2>
         </div>
         <span className="rounded-full bg-surface px-3 py-1 text-xs text-muted">
-          SudachiPy
+          离线 Kuromoji
         </span>
       </header>
 
@@ -265,12 +268,14 @@ export default function LyricsDisplay({
           <ErrorState message={errorMessage} onRetry={onRetry} />
         )}
         {status === "success" && document && (
-          <SuccessState
-            document={document}
-            onReadingApply={onReadingApply}
-            preservedReadingCount={preservedReadingCount}
-            onClearReadingOverrides={onClearReadingOverrides}
-          />
+          <TranslationProvider key={document.id} document={document}>
+            <SuccessState
+              document={document}
+              onReadingApply={onReadingApply}
+              preservedReadingCount={preservedReadingCount}
+              onClearReadingOverrides={onClearReadingOverrides}
+            />
+          </TranslationProvider>
         )}
       </div>
     </section>

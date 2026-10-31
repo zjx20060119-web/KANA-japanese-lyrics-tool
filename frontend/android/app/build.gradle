@@ -1,5 +1,8 @@
 apply plugin: 'com.android.application'
 
+def kanaVersionCode = (findProperty("kanaVersionCode") ?: "1").toString().toInteger()
+def kanaVersionName = (findProperty("kanaVersionName") ?: "1.0").toString()
+
 android {
     namespace = "com.kana.furigana"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +10,8 @@ android {
         applicationId "com.kana.furigana"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode kanaVersionCode
+        versionName kanaVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

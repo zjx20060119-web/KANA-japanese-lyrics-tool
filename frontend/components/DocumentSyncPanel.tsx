@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import {
@@ -93,8 +92,8 @@ export default function DocumentSyncPanel({
   };
 
   return (
-    <section className="flex flex-wrap items-center gap-3 border-y border-line bg-canvas py-3">
-      <div className="flex items-center gap-2 text-ink">
+    <section className="flex flex-wrap items-center gap-3 border-y border-line bg-canvas py-4">
+      <div className="flex min-w-0 items-center gap-2 text-ink">
         <span className="grid h-8 w-8 place-items-center rounded-full bg-surface">
           <SyncIcon />
         </span>
@@ -108,24 +107,16 @@ export default function DocumentSyncPanel({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="ml-auto flex w-full items-center justify-end gap-2 sm:w-auto">
         <button
           type="button"
           onClick={() => void save()}
           disabled={isBusy || !document}
-          className="h-9 rounded-full bg-brand px-4 text-xs font-medium text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-45"
+          className="h-10 w-full rounded-full bg-brand px-5 text-sm font-medium text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"
         >
           {savedDocumentId ? "保存当前修改" : "保存当前结果"}
         </button>
       </div>
-
-      <Link
-        href="/library"
-        prefetch={false}
-        className="ml-auto flex h-9 items-center rounded-full border border-line px-4 text-xs font-medium text-ink hover:bg-surface"
-      >
-        打开我的歌词库
-      </Link>
 
       {message && (
         <p className="w-full text-xs leading-5 text-muted" role="status">

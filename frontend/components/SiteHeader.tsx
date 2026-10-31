@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import WorkbenchSettings from "@/components/WorkbenchSettings";
+
 function WorkbenchIcon() {
   return (
     <svg
@@ -35,16 +37,22 @@ function LibraryIcon() {
 
 export default function SiteHeader() {
   const pathname = usePathname();
-  const isLibrary = pathname === "/library";
+  const normalizedPath = (pathname || "/").replace(/\/+$/, "") || "/";
+  const isLibrary = normalizedPath === "/library";
 
   return (
-    <header className="sticky top-0 z-40 h-14 border-b border-line bg-canvas">
-      <div className="mx-auto flex h-full max-w-[1500px] items-center gap-3 px-3 sm:px-5">
-        <Link href="/" className="flex shrink-0 items-center gap-2.5">
+    <header className="sticky top-0 z-40 h-[calc(3.5rem+env(safe-area-inset-top))] border-b border-line bg-canvas pt-[env(safe-area-inset-top)]">
+      <div className="app-gutter mx-auto flex h-14 max-w-[1500px] items-center gap-2 sm:gap-3">
+        <Link
+          href="/"
+          prefetch={false}
+          aria-label="KANA 首页"
+          className="flex shrink-0 items-center gap-2.5"
+        >
           <span className="font-japanese grid h-8 w-8 place-items-center rounded-md bg-brand text-lg font-normal text-white">
             歌
           </span>
-          <span>
+          <span className="hidden min-[380px]:block">
             <span className="block text-base font-bold leading-5">KANA</span>
             <span className="hidden text-[11px] leading-4 text-muted sm:block">
               日语歌词注音
@@ -54,11 +62,13 @@ export default function SiteHeader() {
 
         <nav
           aria-label="主导航"
-          className="ml-2 flex items-center gap-1 sm:ml-6"
+          className="ml-1 flex min-w-0 items-center gap-0.5 sm:ml-6 sm:gap-1"
         >
           <Link
             href="/"
-            className={`flex h-9 items-center gap-2 rounded-full px-3 text-xs font-medium transition ${
+            prefetch={false}
+            aria-current={isLibrary ? undefined : "page"}
+            className={`flex h-9 items-center gap-1.5 rounded-full px-2 text-xs font-medium transition sm:gap-2 sm:px-3 ${
               isLibrary
                 ? "text-muted hover:bg-surface hover:text-ink"
                 : "bg-ink text-white"
@@ -70,7 +80,8 @@ export default function SiteHeader() {
           <Link
             href="/library"
             prefetch={false}
-            className={`flex h-9 items-center gap-2 rounded-full px-3 text-xs font-medium transition ${
+            aria-current={isLibrary ? "page" : undefined}
+            className={`flex h-9 items-center gap-1.5 rounded-full px-2 text-xs font-medium transition sm:gap-2 sm:px-3 ${
               isLibrary
                 ? "bg-ink text-white"
                 : "text-muted hover:bg-surface hover:text-ink"
@@ -81,20 +92,8 @@ export default function SiteHeader() {
           </Link>
         </nav>
 
-        <div className="ml-auto flex items-center gap-2">
-          <span
-            className="inline-flex h-9 items-center gap-2 rounded-full border border-line bg-canvas px-3 text-xs text-muted"
-            title="所有注音和歌词库数据都在本机处理"
-          >
-            <span className="h-2 w-2 rounded-full bg-success" />
-            本地模式
-          </span>
-          <span
-            aria-hidden="true"
-            className="hidden h-8 w-8 place-items-center rounded-full bg-surface text-xs font-medium text-muted sm:grid"
-          >
-            K
-          </span>
+        <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+          <WorkbenchSettings />
         </div>
       </div>
     </header>

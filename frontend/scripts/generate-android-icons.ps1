@@ -190,7 +190,7 @@ function New-IconBitmap {
                 $brush.Dispose()
                 $path.Dispose()
             }
-            Draw-CenteredGlyph $graphics $Glyph ($Size / 2) ($Size / 2) ($Size * 0.60)
+            Draw-CenteredGlyph $graphics $Glyph ($Size / 2) ($Size / 2) ($Size * 0.46)
         } elseif ($Variant -eq "round") {
             $brush = New-Object System.Drawing.SolidBrush($red)
             try {
@@ -198,9 +198,9 @@ function New-IconBitmap {
             } finally {
                 $brush.Dispose()
             }
-            Draw-CenteredGlyph $graphics $Glyph ($Size / 2) ($Size / 2) ($Size * 0.56)
+            Draw-CenteredGlyph $graphics $Glyph ($Size / 2) ($Size / 2) ($Size * 0.44)
         } else {
-            Draw-CenteredGlyph $graphics $Glyph ($Size / 2) ($Size / 2) ($Size * 0.52)
+            Draw-CenteredGlyph $graphics $Glyph ($Size / 2) ($Size / 2) ($Size * 0.40)
         }
     } finally {
         $graphics.Dispose()
@@ -257,7 +257,7 @@ function New-SplashBitmap {
             $path.Dispose()
         }
 
-        Draw-CenteredGlyph $graphics $Glyph ($Width / 2) ($Height / 2) ($iconSize * 0.60)
+        Draw-CenteredGlyph $graphics $Glyph ($Width / 2) ($Height / 2) ($iconSize * 0.46)
     } finally {
         $graphics.Dispose()
     }

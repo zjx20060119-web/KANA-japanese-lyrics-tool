@@ -347,7 +347,7 @@ export default function LyricsWorkspace() {
   return (
     <div className="space-y-5">
       {!initialDocumentId && (
-        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+        <div className="mb-5">
           <div>
             <h1 className="text-2xl font-bold leading-8">歌词注音</h1>
             <p className="mt-1 text-sm text-muted">
@@ -372,10 +372,6 @@ export default function LyricsWorkspace() {
         </div>
       )}
 
-      <DocumentSyncPanel
-        document={document}
-        initialDocumentId={initialDocumentId}
-      />
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]">
         <LyricsInput
           title={title}
@@ -403,6 +399,10 @@ export default function LyricsWorkspace() {
           onClearReadingOverrides={() => void clearCurrentReadingOverrides()}
         />
       </div>
+      <DocumentSyncPanel
+        document={document}
+        initialDocumentId={initialDocumentId}
+      />
     </div>
   );
 }

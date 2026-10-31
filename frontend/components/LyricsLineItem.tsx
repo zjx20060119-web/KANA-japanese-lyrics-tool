@@ -2,9 +2,11 @@
 
 import { useId, useState } from "react";
 
+import { useDisplaySettings } from "@/components/DisplaySettingsProvider";
 import ReadingEditor from "@/components/ReadingEditor";
 import RomajiLine from "@/components/RomajiLine";
 import RubyText from "@/components/RubyText";
+import TranslatedLine from "@/components/TranslatedLine";
 import type { LyricsLine } from "@/lib/types";
 
 type LyricsLineItemProps = {
@@ -20,6 +22,7 @@ export default function LyricsLineItem({
   onReadingApply,
 }: LyricsLineItemProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const { settings } = useDisplaySettings();
   const editorId = useId();
   const lineNumber = String(line.line_index + 1).padStart(2, "0");
   const needsReview = line.segments.some((segment) => segment.needs_review);
@@ -45,7 +48,11 @@ export default function LyricsLineItem({
 
   return (
     <article
-      className="min-w-0 border-b border-line py-2.5 last:border-b-0"
+      className="min-w-0 border-b border-line last:border-b-0"
+      style={{
+        paddingTop: settings.rowGap / 2,
+        paddingBottom: settings.rowGap / 2,
+      }}
       data-line-index={line.line_index}
       data-original-text={line.original_text}
     >
@@ -55,17 +62,27 @@ export default function LyricsLineItem({
         </span>
 
         <div className="min-w-0 flex-1">
-          <div className="font-japanese break-words text-[25px] leading-[1.75] text-ink [overflow-wrap:anywhere]">
+          <div
+            className="font-japanese break-words leading-[1.75] text-ink [overflow-wrap:anywhere]"
+            style={{ fontSize: `${settings.lyricSize}px` }}
+          >
             <RubyText segments={line.segments} />
           </div>
 
-          <div className="-mt-2 flex min-w-0 flex-wrap items-start justify-between gap-3">
-            <RomajiLine
-              romaji={line.romaji}
-              fontSize={13}
-              showMarker={false}
-            />
-            <div className="flex shrink-0 items-center gap-2">
+          <div
+            className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3"
+            style={{
+              marginTop: `${settings.showRomaji ? settings.romajiGap : 2}px`,
+            }}
+          >
+            {settings.showRomaji && (
+              <RomajiLine
+                romaji={line.romaji}
+                fontSize={settings.romajiSize}
+                showMarker={false}
+              />
+            )}
+            <div className="ml-auto flex shrink-0 items-center gap-2 sm:ml-0">
               {confirmedCount > 0 && (
                 <span className="rounded-full bg-[#f1faf3] px-2.5 py-1 text-[10px] text-success">
                   已确认 {confirmedCount}
@@ -97,6 +114,7 @@ export default function LyricsLineItem({
               </button>
             </div>
           </div>
+          <TranslatedLine line={line} gap={settings.translationGap} />
 
           {isEditing && (
             <div id={editorId}>

@@ -70,6 +70,10 @@
   box-sizing: border-box;
 }
 
+.app-gutter {
+  padding-inline: clamp(1.25rem, 5vw, 3rem);
+}
+
 html {
   min-width: 320px;
   background: var(--canvas);

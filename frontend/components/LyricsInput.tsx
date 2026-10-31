@@ -49,16 +49,16 @@ export default function LyricsInput({
       aria-labelledby="input-heading"
       className="min-w-0 rounded-xl border border-line bg-canvas p-4 sm:p-5"
     >
-      <header className="mb-5 flex items-center justify-between gap-4">
+      <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <h2 id="input-heading" className="text-xl font-medium leading-7">
           输入歌词
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={onLoadSample}
             disabled={isProcessing}
-            className="h-9 rounded-full border border-line px-4 text-xs font-medium text-ink transition hover:bg-surface disabled:cursor-wait disabled:opacity-55"
+            className="h-9 rounded-full border border-line px-3 text-xs font-medium text-ink transition hover:bg-surface disabled:cursor-wait disabled:opacity-55 sm:px-4"
           >
             载入示例
           </button>
@@ -66,7 +66,7 @@ export default function LyricsInput({
             type="button"
             onClick={onClear}
             disabled={isProcessing}
-            className="h-9 rounded-full border border-line px-4 text-xs font-medium text-muted transition hover:bg-surface hover:text-ink disabled:cursor-wait disabled:opacity-55"
+            className="h-9 rounded-full border border-line px-3 text-xs font-medium text-muted transition hover:bg-surface hover:text-ink disabled:cursor-wait disabled:opacity-55 sm:px-4"
           >
             清空
           </button>
@@ -77,48 +77,42 @@ export default function LyricsInput({
         <fieldset disabled={isProcessing} className="min-w-0">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
             <label className="block">
-              <span className="mb-1.5 flex items-center justify-between text-xs font-medium text-muted">
+              <span className="mb-1.5 block text-xs font-medium text-muted">
                 歌曲名称
-                <span className="font-normal text-muted">选填</span>
               </span>
               <input
                 type="text"
                 name="title"
                 value={title}
                 onChange={(event) => onTitleChange(event.target.value)}
-                placeholder="例如：星の便り"
                 autoComplete="off"
                 className={`${FIELD_CLASS} font-japanese`}
               />
             </label>
 
             <label className="block">
-              <span className="mb-1.5 flex items-center justify-between text-xs font-medium text-muted">
+              <span className="mb-1.5 block text-xs font-medium text-muted">
                 歌手
-                <span className="font-normal text-muted">选填</span>
               </span>
               <input
                 type="text"
                 name="artist"
                 value={artist}
                 onChange={(event) => onArtistChange(event.target.value)}
-                placeholder="例如：KANA Demo"
                 autoComplete="off"
                 className={`${FIELD_CLASS} font-japanese`}
               />
             </label>
 
             <label className="block sm:col-span-2">
-              <span className="mb-1.5 flex items-center justify-between text-xs font-medium text-muted">
+              <span className="mb-1.5 block text-xs font-medium text-muted">
                 专辑
-                <span className="font-normal text-muted">选填</span>
               </span>
               <input
                 type="text"
                 name="album"
                 value={album}
                 onChange={(event) => onAlbumChange(event.target.value)}
-                placeholder="例如：First Album"
                 autoComplete="off"
                 className={`${FIELD_CLASS} font-japanese`}
               />

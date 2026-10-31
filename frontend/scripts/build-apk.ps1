@@ -1,3 +1,8 @@
+param(
+    [string]$VersionName = "",
+    [int]$VersionCode = 0
+)
+
 $ErrorActionPreference = "Stop"
 
 $frontendRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
@@ -58,7 +63,14 @@ try {
 
     Push-Location (Join-Path $frontendRoot "android")
     try {
-        & $gradlePath assembleDebug --console=plain
+        $gradleArguments = @("assembleDebug", "--console=plain")
+        if ($VersionName) {
+            $gradleArguments += "-PkanaVersionName=$VersionName"
+        }
+        if ($VersionCode -gt 0) {
+            $gradleArguments += "-PkanaVersionCode=$VersionCode"
+        }
+        & $gradlePath @gradleArguments
         if ($LASTEXITCODE -ne 0) {
             throw "Android APK build failed."
         }

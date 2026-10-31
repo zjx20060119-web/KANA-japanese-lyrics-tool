@@ -213,17 +213,17 @@ export default function LyricsLibrary() {
   };
 
   return (
-    <div className="space-y-5">
-      <section className="border-b border-line pb-4">
+    <div className="space-y-6 sm:space-y-7">
+      <section className="border-b border-line pb-5 sm:pb-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold leading-8">我的歌词库</h1>
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="mt-4 flex flex-wrap items-center gap-2.5">
           <form
-            className="flex min-w-[240px] flex-1 sm:max-w-2xl"
+            className="flex w-full min-w-0 sm:max-w-2xl sm:flex-1"
             onSubmit={(event) => {
               event.preventDefault();
               void search();
@@ -286,7 +286,7 @@ export default function LyricsLibrary() {
               还没有保存歌曲。完成注音后，从工作台保存到歌词库。
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-8 lg:grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
+            <div className="grid grid-cols-1 gap-x-4 gap-y-7 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-x-5 sm:gap-y-9 lg:grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
               {documents.map((item) => (
                 <article
                   key={item.id}
