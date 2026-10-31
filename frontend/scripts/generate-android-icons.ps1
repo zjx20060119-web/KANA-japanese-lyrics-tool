@@ -2,10 +2,35 @@ $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.Drawing
 
 $frontendRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+$projectRoot = Resolve-Path (Join-Path $frontendRoot "..")
 $resourceRoot = Join-Path $frontendRoot "android\app\src\main\res"
-$glyphText = [string][char]0x6B4C
+$docsRoot = Join-Path $projectRoot "docs"
 $red = [System.Drawing.Color]::FromArgb(255, 255, 0, 0)
 $white = [System.Drawing.Color]::White
+$border = [System.Drawing.Color]::FromArgb(255, 226, 226, 226)
+$paper = [System.Drawing.Color]::FromArgb(255, 247, 244, 237)
+$ink = [System.Drawing.Color]::FromArgb(255, 20, 20, 20)
+$muted = [System.Drawing.Color]::FromArgb(255, 82, 82, 82)
+
+function ConvertFrom-CodePoints {
+    param([int[]]$CodePoints)
+    return -join ($CodePoints | ForEach-Object { [char]$_ })
+}
+
+$kanaText = ConvertFrom-CodePoints @(0x304B, 0x306A)
+$subtitleText = ConvertFrom-CodePoints @(
+    0x65E5,
+    0x8BED,
+    0x6B4C,
+    0x8BCD,
+    0x667A,
+    0x80FD,
+    0x6CE8,
+    0x97F3
+)
+$furiganaText = ConvertFrom-CodePoints @(0x5047, 0x540D, 0x6CE8, 0x97F3)
+$romajiText = ConvertFrom-CodePoints @(0x9010, 0x884C, 0x7F57, 0x9A6C, 0x97F3)
+$translationText = ConvertFrom-CodePoints @(0x5FAE, 0x8F6F, 0x7FFB, 0x8BD1)
 
 function New-RoundedRectPath {
     param(
@@ -74,7 +99,7 @@ function Get-InkBounds {
     }
 
     if ($maxX -lt $minX -or $maxY -lt $minY) {
-        throw "The glyph bitmap contains no visible pixels."
+        throw "The icon artwork contains no visible pixels."
     }
 
     return New-Object System.Drawing.RectangleF(
@@ -85,11 +110,12 @@ function Get-InkBounds {
     )
 }
 
-function New-GlyphArtwork {
-    $canvasSize = 1024
+function New-SignatureArtwork {
+    $canvasWidth = 1400
+    $canvasHeight = 1100
     $bitmap = New-Object System.Drawing.Bitmap(
-        $canvasSize,
-        $canvasSize,
+        $canvasWidth,
+        $canvasHeight,
         [System.Drawing.Imaging.PixelFormat]::Format32bppArgb
     )
     $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
@@ -98,33 +124,42 @@ function New-GlyphArtwork {
         $graphics.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
         $graphics.Clear([System.Drawing.Color]::Transparent)
 
-        $font = New-Object System.Drawing.Font(
-            "Yu Mincho",
-            720,
-            [System.Drawing.FontStyle]::Regular,
-            [System.Drawing.GraphicsUnit]::Pixel
-        )
+        $brush = New-Object System.Drawing.SolidBrush($red)
         $format = New-Object System.Drawing.StringFormat
         $format.Alignment = [System.Drawing.StringAlignment]::Center
         $format.LineAlignment = [System.Drawing.StringAlignment]::Center
-        $brush = New-Object System.Drawing.SolidBrush($white)
+        $latinFont = New-Object System.Drawing.Font(
+            "Segoe UI",
+            232,
+            [System.Drawing.FontStyle]::Regular,
+            [System.Drawing.GraphicsUnit]::Pixel
+        )
+        $japaneseFont = New-Object System.Drawing.Font(
+            "Yu Mincho",
+            310,
+            [System.Drawing.FontStyle]::Regular,
+            [System.Drawing.GraphicsUnit]::Pixel
+        )
         try {
             $graphics.DrawString(
-                $glyphText,
-                $font,
+                "kana",
+                $latinFont,
                 $brush,
-                (New-Object System.Drawing.RectangleF(
-                    0,
-                    0,
-                    $canvasSize,
-                    $canvasSize
-                )),
+                (New-Object System.Drawing.RectangleF(0, 80, $canvasWidth, 410)),
+                $format
+            )
+            $graphics.DrawString(
+                $kanaText,
+                $japaneseFont,
+                $brush,
+                (New-Object System.Drawing.RectangleF(0, 470, $canvasWidth, 520)),
                 $format
             )
         } finally {
-            $brush.Dispose()
+            $latinFont.Dispose()
+            $japaneseFont.Dispose()
             $format.Dispose()
-            $font.Dispose()
+            $brush.Dispose()
         }
     } finally {
         $graphics.Dispose()
@@ -136,15 +171,15 @@ function New-GlyphArtwork {
     }
 }
 
-function Draw-CenteredGlyph {
+function Draw-CenteredArtwork {
     param(
         [System.Drawing.Graphics]$Graphics,
-        $Glyph,
+        $Artwork,
         [float]$CenterX,
         [float]$CenterY,
         [float]$TargetInkHeight
     )
-    $sourceBounds = $Glyph.Bounds
+    $sourceBounds = $Artwork.Bounds
     $aspect = $sourceBounds.Width / $sourceBounds.Height
     $targetWidth = $TargetInkHeight * $aspect
     $destination = New-Object System.Drawing.RectangleF(
@@ -154,11 +189,45 @@ function Draw-CenteredGlyph {
         $TargetInkHeight
     )
     $Graphics.DrawImage(
-        $Glyph.Bitmap,
+        $Artwork.Bitmap,
         $destination,
         $sourceBounds,
         [System.Drawing.GraphicsUnit]::Pixel
     )
+}
+
+function Draw-IconShape {
+    param(
+        [System.Drawing.Graphics]$Graphics,
+        [int]$Size,
+        [ValidateSet("legacy", "round")]
+        [string]$Variant
+    )
+    $borderWidth = [Math]::Max(1, [int]($Size * 0.012))
+    $inset = $borderWidth / 2
+    $fill = New-Object System.Drawing.SolidBrush($white)
+    $stroke = New-Object System.Drawing.Pen($border, $borderWidth)
+    $path = $null
+    try {
+        if ($Variant -eq "legacy") {
+            $path = New-RoundedRectPath `
+                -X $inset `
+                -Y $inset `
+                -Width ($Size - $borderWidth) `
+                -Height ($Size - $borderWidth) `
+                -Radius ([float]($Size * 0.18))
+            $Graphics.FillPath($fill, $path)
+            $Graphics.DrawPath($stroke, $path)
+        } else {
+            $diameter = $Size - $borderWidth
+            $Graphics.FillEllipse($fill, $inset, $inset, $diameter, $diameter)
+            $Graphics.DrawEllipse($stroke, $inset, $inset, $diameter, $diameter)
+        }
+    } finally {
+        if ($path) { $path.Dispose() }
+        $stroke.Dispose()
+        $fill.Dispose()
+    }
 }
 
 function New-IconBitmap {
@@ -166,7 +235,7 @@ function New-IconBitmap {
         [int]$Size,
         [ValidateSet("legacy", "round", "foreground")]
         [string]$Variant,
-        $Glyph
+        $Artwork
     )
     $bitmap = New-Object System.Drawing.Bitmap(
         $Size,
@@ -181,26 +250,13 @@ function New-IconBitmap {
         $graphics.Clear([System.Drawing.Color]::Transparent)
 
         if ($Variant -eq "legacy") {
-            $radius = [float]($Size * 0.18)
-            $path = New-RoundedRectPath 0 0 $Size $Size $radius
-            $brush = New-Object System.Drawing.SolidBrush($red)
-            try {
-                $graphics.FillPath($brush, $path)
-            } finally {
-                $brush.Dispose()
-                $path.Dispose()
-            }
-            Draw-CenteredGlyph $graphics $Glyph ($Size / 2) ($Size / 2) ($Size * 0.46)
+            Draw-IconShape $graphics $Size "legacy"
+            Draw-CenteredArtwork $graphics $Artwork ($Size / 2) ($Size / 2) ($Size * 0.56)
         } elseif ($Variant -eq "round") {
-            $brush = New-Object System.Drawing.SolidBrush($red)
-            try {
-                $graphics.FillEllipse($brush, 0, 0, $Size, $Size)
-            } finally {
-                $brush.Dispose()
-            }
-            Draw-CenteredGlyph $graphics $Glyph ($Size / 2) ($Size / 2) ($Size * 0.44)
+            Draw-IconShape $graphics $Size "round"
+            Draw-CenteredArtwork $graphics $Artwork ($Size / 2) ($Size / 2) ($Size * 0.52)
         } else {
-            Draw-CenteredGlyph $graphics $Glyph ($Size / 2) ($Size / 2) ($Size * 0.40)
+            Draw-CenteredArtwork $graphics $Artwork ($Size / 2) ($Size / 2) ($Size * 0.42)
         }
     } finally {
         $graphics.Dispose()
@@ -213,12 +269,12 @@ function Save-Icon {
         [int]$Size,
         [string]$Variant,
         [string]$RelativePath,
-        $Glyph
+        $Artwork
     )
     $path = Join-Path $resourceRoot $RelativePath
     $directory = Split-Path -Parent $path
     New-Item -ItemType Directory -Force -Path $directory | Out-Null
-    $bitmap = New-IconBitmap $Size $Variant $Glyph
+    $bitmap = New-IconBitmap $Size $Variant $Artwork
     try {
         $bitmap.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
     } finally {
@@ -230,7 +286,7 @@ function New-SplashBitmap {
     param(
         [int]$Width,
         [int]$Height,
-        $Glyph
+        $Artwork
     )
     $bitmap = New-Object System.Drawing.Bitmap(
         $Width,
@@ -242,22 +298,29 @@ function New-SplashBitmap {
         $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
         $graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
         $graphics.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
-        $graphics.Clear($white)
+        $graphics.Clear($paper)
 
-        $iconSize = [int]([Math]::Min($Width, $Height) * 0.30)
+        $iconSize = [int]([Math]::Min($Width, $Height) * 0.34)
         $iconX = [int](($Width - $iconSize) / 2)
         $iconY = [int](($Height - $iconSize) / 2)
-        $radius = [float]($iconSize * 0.18)
-        $path = New-RoundedRectPath $iconX $iconY $iconSize $iconSize $radius
-        $brush = New-Object System.Drawing.SolidBrush($red)
+        $borderWidth = [Math]::Max(1, [int]($iconSize * 0.012))
+        $path = New-RoundedRectPath `
+            -X ($iconX + $borderWidth / 2) `
+            -Y ($iconY + $borderWidth / 2) `
+            -Width ($iconSize - $borderWidth) `
+            -Height ($iconSize - $borderWidth) `
+            -Radius ([float]($iconSize * 0.18))
+        $fill = New-Object System.Drawing.SolidBrush($white)
+        $stroke = New-Object System.Drawing.Pen($border, $borderWidth)
         try {
-            $graphics.FillPath($brush, $path)
+            $graphics.FillPath($fill, $path)
+            $graphics.DrawPath($stroke, $path)
         } finally {
-            $brush.Dispose()
+            $stroke.Dispose()
+            $fill.Dispose()
             $path.Dispose()
         }
-
-        Draw-CenteredGlyph $graphics $Glyph ($Width / 2) ($Height / 2) ($iconSize * 0.46)
+        Draw-CenteredArtwork $graphics $Artwork ($Width / 2) ($Height / 2) ($iconSize * 0.56)
     } finally {
         $graphics.Dispose()
     }
@@ -269,16 +332,112 @@ function Save-Splash {
         [int]$Width,
         [int]$Height,
         [string]$RelativePath,
-        $Glyph
+        $Artwork
     )
     $path = Join-Path $resourceRoot $RelativePath
     $directory = Split-Path -Parent $path
     New-Item -ItemType Directory -Force -Path $directory | Out-Null
-    $bitmap = New-SplashBitmap $Width $Height $Glyph
+    $bitmap = New-SplashBitmap $Width $Height $Artwork
     try {
         $bitmap.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
     } finally {
         $bitmap.Dispose()
+    }
+}
+
+function Save-BrandAssets {
+    param($Artwork)
+    New-Item -ItemType Directory -Force -Path $docsRoot | Out-Null
+
+    $appIcon = New-IconBitmap 512 "legacy" $Artwork
+    try {
+        $appIcon.Save(
+            (Join-Path $docsRoot "app-icon.png"),
+            [System.Drawing.Imaging.ImageFormat]::Png
+        )
+    } finally {
+        $appIcon.Dispose()
+    }
+
+    $card = New-Object System.Drawing.Bitmap(
+        1280,
+        640,
+        [System.Drawing.Imaging.PixelFormat]::Format32bppArgb
+    )
+    $graphics = [System.Drawing.Graphics]::FromImage($card)
+    try {
+        $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+        $graphics.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
+        $graphics.Clear($paper)
+
+        $socialIcon = New-IconBitmap 288 "legacy" $Artwork
+        try {
+            $graphics.DrawImage($socialIcon, 96, 176, 288, 288)
+        } finally {
+            $socialIcon.Dispose()
+        }
+
+        $titleFont = New-Object System.Drawing.Font(
+            "Segoe UI",
+            92,
+            [System.Drawing.FontStyle]::Bold,
+            [System.Drawing.GraphicsUnit]::Pixel
+        )
+        $subtitleFont = New-Object System.Drawing.Font(
+            "Microsoft YaHei UI",
+            38,
+            [System.Drawing.FontStyle]::Regular,
+            [System.Drawing.GraphicsUnit]::Pixel
+        )
+        $featureFont = New-Object System.Drawing.Font(
+            "Microsoft YaHei UI",
+            27,
+            [System.Drawing.FontStyle]::Regular,
+            [System.Drawing.GraphicsUnit]::Pixel
+        )
+        $smallFont = New-Object System.Drawing.Font(
+            "Segoe UI",
+            21,
+            [System.Drawing.FontStyle]::Regular,
+            [System.Drawing.GraphicsUnit]::Pixel
+        )
+        $inkBrush = New-Object System.Drawing.SolidBrush($ink)
+        $mutedBrush = New-Object System.Drawing.SolidBrush($muted)
+        $redBrush = New-Object System.Drawing.SolidBrush($red)
+        try {
+            $graphics.DrawString("KANA", $titleFont, $inkBrush, 430, 164)
+            $graphics.DrawString($subtitleText, $subtitleFont, $inkBrush, 436, 292)
+            $graphics.FillRectangle($redBrush, 436, 356, 96, 6)
+            $graphics.DrawString(
+                "$furiganaText  /  $romajiText  /  $translationText",
+                $featureFont,
+                $mutedBrush,
+                436,
+                398
+            )
+            $graphics.DrawString(
+                "Japanese lyrics reader for Android and Web",
+                $smallFont,
+                $mutedBrush,
+                436,
+                456
+            )
+        } finally {
+            $smallFont.Dispose()
+            $featureFont.Dispose()
+            $subtitleFont.Dispose()
+            $titleFont.Dispose()
+            $redBrush.Dispose()
+            $mutedBrush.Dispose()
+            $inkBrush.Dispose()
+        }
+        $card.Save(
+            (Join-Path $docsRoot "social-preview.png"),
+            [System.Drawing.Imaging.ImageFormat]::Png
+        )
+    } finally {
+        $graphics.Dispose()
+        $card.Dispose()
     }
 }
 
@@ -297,29 +456,30 @@ $foregroundSizes = @{
     "xxxhdpi" = 432
 }
 
-$glyph = New-GlyphArtwork
+$artwork = New-SignatureArtwork
 try {
     foreach ($density in $iconSizes.Keys) {
         $size = $iconSizes[$density]
         $foregroundSize = $foregroundSizes[$density]
-        Save-Icon $size "legacy" "mipmap-$density\ic_launcher.png" $glyph
-        Save-Icon $size "round" "mipmap-$density\ic_launcher_round.png" $glyph
-        Save-Icon $foregroundSize "foreground" "mipmap-$density\ic_launcher_foreground.png" $glyph
+        Save-Icon $size "legacy" "mipmap-$density\ic_launcher.png" $artwork
+        Save-Icon $size "round" "mipmap-$density\ic_launcher_round.png" $artwork
+        Save-Icon $foregroundSize "foreground" "mipmap-$density\ic_launcher_foreground.png" $artwork
     }
 
-    Save-Splash 480 320 "drawable\splash.png" $glyph
-    Save-Splash 480 320 "drawable-land-mdpi\splash.png" $glyph
-    Save-Splash 800 480 "drawable-land-hdpi\splash.png" $glyph
-    Save-Splash 1280 720 "drawable-land-xhdpi\splash.png" $glyph
-    Save-Splash 1600 960 "drawable-land-xxhdpi\splash.png" $glyph
-    Save-Splash 1920 1280 "drawable-land-xxxhdpi\splash.png" $glyph
-    Save-Splash 320 480 "drawable-port-mdpi\splash.png" $glyph
-    Save-Splash 480 800 "drawable-port-hdpi\splash.png" $glyph
-    Save-Splash 720 1280 "drawable-port-xhdpi\splash.png" $glyph
-    Save-Splash 960 1600 "drawable-port-xxhdpi\splash.png" $glyph
-    Save-Splash 1280 1920 "drawable-port-xxxhdpi\splash.png" $glyph
+    Save-Splash 480 320 "drawable\splash.png" $artwork
+    Save-Splash 480 320 "drawable-land-mdpi\splash.png" $artwork
+    Save-Splash 800 480 "drawable-land-hdpi\splash.png" $artwork
+    Save-Splash 1280 720 "drawable-land-xhdpi\splash.png" $artwork
+    Save-Splash 1600 960 "drawable-land-xxhdpi\splash.png" $artwork
+    Save-Splash 1920 1280 "drawable-land-xxxhdpi\splash.png" $artwork
+    Save-Splash 320 480 "drawable-port-mdpi\splash.png" $artwork
+    Save-Splash 480 800 "drawable-port-hdpi\splash.png" $artwork
+    Save-Splash 720 1280 "drawable-port-xhdpi\splash.png" $artwork
+    Save-Splash 960 1600 "drawable-port-xxhdpi\splash.png" $artwork
+    Save-Splash 1280 1920 "drawable-port-xxxhdpi\splash.png" $artwork
+    Save-BrandAssets $artwork
 } finally {
-    $glyph.Bitmap.Dispose()
+    $artwork.Bitmap.Dispose()
 }
 
-Write-Host "Android icons and splash screens generated with ink-centered glyphs."
+Write-Host "Android icons and brand assets generated with centered kana artwork."
