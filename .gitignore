@@ -1,40 +1,182 @@
-# Operating system files
+# -----------------------------------------------------------------------------
+# Operating system
+# -----------------------------------------------------------------------------
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 Desktop.ini
 
-# Editor settings
+# -----------------------------------------------------------------------------
+# Editors and IDEs
+# -----------------------------------------------------------------------------
 .idea/
 .vscode/
+*.iml
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
 
-# Logs and runtime files
+# -----------------------------------------------------------------------------
+# Environment variables and local secrets
+# -----------------------------------------------------------------------------
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.local.example
+!**/*.env.example
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+frontend/android/key.properties
+proxy/.dev.vars
+
+# -----------------------------------------------------------------------------
+# Logs, caches and runtime files
+# -----------------------------------------------------------------------------
 *.log
 *.pid
+*.seed
+*.pid.lock
+*.hprof
 .runtime/
 .tools/
-KANA-debug.apk
-obsidian-sync-config.json
+.cache/
+.turbo/
+coverage/
+htmlcov/
+.nyc_output/
 
-# Frontend
-frontend/node_modules/
+# -----------------------------------------------------------------------------
+# Node.js and package managers
+# -----------------------------------------------------------------------------
+node_modules/
+.pnp
+.pnp.*
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# -----------------------------------------------------------------------------
+# Next.js and frontend build output
+# -----------------------------------------------------------------------------
 frontend/.next/
 frontend/out/
 frontend/build/
-frontend/.env*
-!frontend/.env.local.example
+frontend/.vercel/
+frontend/next-env.d.ts
 frontend/*.tsbuildinfo
-frontend/public/fonts/CALIST.TTF
-frontend/public/fonts/yumin.ttf
-frontend/public/initial-library.json
+frontend/.eslintcache
 
-# Python
-backend/.venv/
-backend/.env*
-!backend/.env.example
-backend/data/
+# -----------------------------------------------------------------------------
+# Android, Capacitor and Gradle
+# -----------------------------------------------------------------------------
+frontend/android/.gradle/
+frontend/android/build/
+frontend/android/app/build/
+frontend/android/local.properties
+frontend/android/.externalNativeBuild/
+frontend/android/.cxx/
+frontend/android/captures/
+frontend/android/.navigation/
+frontend/android/capacitor-cordova-android-plugins/
+frontend/android/app/src/main/assets/public/
+frontend/android/app/src/main/assets/capacitor.config.json
+frontend/android/app/src/main/assets/capacitor.plugins.json
+frontend/android/app/src/main/res/xml/config.xml
+
+# APK/AAB build artifacts. Upload release APKs to GitHub Releases, not Git.
+*.apk
+*.aab
+*.aar
+*.ap_
+*.dex
+*.class
+KANA-debug.apk
+
+# -----------------------------------------------------------------------------
+# Fonts with local-only licenses
+# -----------------------------------------------------------------------------
+frontend/public/fonts/*.ttf
+frontend/public/fonts/*.otf
+
+# User lyric data and local migration files
+frontend/public/initial-library.json
+initial-library.json
+
+# -----------------------------------------------------------------------------
+# Python and backend
+# -----------------------------------------------------------------------------
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.coverage
+.coverage.*
+.tox/
+.nox/
+pip-wheel-metadata/
+build/
+dist/
+*.egg-info/
+backend/.env*
+!backend/.env.example
+backend/data/
 
+# Local databases
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+*.sqlite-shm
+*.sqlite-wal
+
+# -----------------------------------------------------------------------------
+# Cloudflare Wrangler
+# -----------------------------------------------------------------------------
+proxy/.wrangler/
+proxy/.dev.vars
+proxy/.dev.vars.*
+
+# -----------------------------------------------------------------------------
+# Obsidian and local synchronization
+# -----------------------------------------------------------------------------
+obsidian-sync-config.json
+.kana-sync-index.json
+
+# -----------------------------------------------------------------------------
+# Temporary files
+# -----------------------------------------------------------------------------
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Keep required examples and third-party notices tracked
+!backend/.env.example
+!frontend/.env.local.example
+!frontend/public/fonts/LICENSE-SourceHanSans.txt
+!frontend/public/fonts/README.md
+!frontend/public/kuromoji-dict/LICENSE-2.0.txt
+!frontend/public/kuromoji-dict/NOTICE.md
+!frontend/public/lookup/ja-zh/NOTICE.md
