@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./frontend/app/icon.svg" width="96" height="96" alt="KANA 图标" />
+  <img src="./docs/app-icon.png" width="96" height="96" alt="KANA 图标" />
   <h1>KANA · 日语歌词智能注音</h1>
   <p>保留原歌词排版，自动生成汉字假名、逐行罗马音与中文翻译。</p>
 

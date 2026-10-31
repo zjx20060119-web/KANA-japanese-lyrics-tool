@@ -58,47 +58,6 @@ function SliderRow({
   );
 }
 
-function ToggleRow({
-  label,
-  description,
-  checked,
-  onChange,
-}: {
-  label: string;
-  description: string;
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      onClick={() => onChange(!checked)}
-      className="flex min-h-12 w-full items-center justify-between gap-4 rounded-lg text-left transition hover:bg-surface"
-    >
-      <span className="min-w-0">
-        <span className="block text-xs font-medium text-ink">{label}</span>
-        <span className="mt-0.5 block text-[10px] leading-4 text-muted">
-          {description}
-        </span>
-      </span>
-      <span
-        aria-hidden="true"
-        className={`relative h-6 w-10 shrink-0 rounded-full transition ${
-          checked ? "bg-brand" : "bg-surface-strong"
-        }`}
-      >
-        <span
-          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-            checked ? "translate-x-[18px]" : "translate-x-0.5"
-          }`}
-        />
-      </span>
-    </button>
-  );
-}
-
 function UpdatePanel() {
   const {
     repo,
@@ -292,7 +251,7 @@ export default function WorkbenchSettings() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="settings-title"
-            className="absolute inset-x-0 bottom-0 max-h-[86dvh] overflow-y-auto rounded-t-2xl bg-canvas p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-[0_-8px_32px_rgba(0,0,0,0.14)] sm:inset-y-0 sm:left-auto sm:right-0 sm:w-[380px] sm:max-h-none sm:rounded-none sm:rounded-l-2xl sm:p-6 sm:pb-6"
+            className="absolute inset-y-0 right-0 w-[min(92vw,380px)] overflow-y-auto rounded-l-2xl bg-canvas p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-[calc(1.25rem+env(safe-area-inset-top))] shadow-[-8px_0_32px_rgba(0,0,0,0.16)] sm:w-[380px] sm:p-6 sm:pb-6"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -321,30 +280,6 @@ export default function WorkbenchSettings() {
                   <path d="m4 4 8 8M12 4l-8 8" />
                 </svg>
               </button>
-            </div>
-
-            <div className="mt-6 border-t border-line pt-5">
-              <p className="text-[11px] font-medium tracking-[0.08em] text-muted">
-                显示内容
-              </p>
-              <div className="mt-2">
-                <ToggleRow
-                  label="显示罗马音"
-                  description="在每行歌词下方显示罗马音"
-                  checked={settings.showRomaji}
-                  onChange={(showRomaji) =>
-                    updateSettings({ showRomaji })
-                  }
-                />
-                <ToggleRow
-                  label="显示翻译"
-                  description="显示已经生成的逐行中文翻译"
-                  checked={settings.showTranslation}
-                  onChange={(showTranslation) =>
-                    updateSettings({ showTranslation })
-                  }
-                />
-              </div>
             </div>
 
             <div className="mt-6 border-t border-line pt-5">

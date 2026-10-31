@@ -140,21 +140,21 @@ export default function SavedLyricsView({
             data-export-ignore="true"
             className="flex shrink-0 flex-wrap items-center gap-2"
           >
-            <TranslationControls compact />
-            <Link
-              href="/library"
-              prefetch={false}
-              className="flex h-10 items-center rounded-full px-3 text-xs font-medium text-muted transition hover:bg-surface hover:text-ink"
-            >
-              返回歌词库
-            </Link>
+            <TranslationControls compact engineFirst />
             <button
               type="button"
               onClick={onEdit}
-              className="font-sans h-10 rounded-full bg-brand px-5 text-sm font-medium text-white transition hover:bg-brand-hover"
+              className="font-sans h-10 rounded-full border border-line px-4 text-sm font-medium text-ink transition hover:bg-surface"
             >
               修改歌词
             </button>
+            <Link
+              href="/library"
+              prefetch={false}
+              className="flex h-10 items-center rounded-full bg-brand px-5 text-sm font-medium text-white transition hover:bg-brand-hover"
+            >
+              返回歌词库
+            </Link>
           </div>
         </header>
 

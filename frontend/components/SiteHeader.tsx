@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import HeaderVisibilityToggles from "@/components/HeaderVisibilityToggles";
 import WorkbenchSettings from "@/components/WorkbenchSettings";
 
 function WorkbenchIcon() {
@@ -93,6 +94,7 @@ export default function SiteHeader() {
         </nav>
 
         <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+          <HeaderVisibilityToggles />
           <WorkbenchSettings />
         </div>
       </div>

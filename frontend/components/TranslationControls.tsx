@@ -29,12 +29,20 @@ const ENGINE_LABELS = {
 
 export default function TranslationControls({
   compact = false,
+  engineFirst = false,
 }: {
   compact?: boolean;
+  engineFirst?: boolean;
 }) {
   const { state, isVisible, start, show, hide, retry } = useTranslation();
   const isLoading = state.phase === "loading";
   const isSuccess = state.phase === "success";
+  const engineBadge =
+    isSuccess && isVisible ? (
+      <span className="rounded-full bg-surface px-2.5 py-1 text-[10px] text-muted">
+        {ENGINE_LABELS[state.engine]}
+      </span>
+    ) : null;
 
   const onClick = () => {
     if (isLoading || state.phase === "error") {
@@ -54,6 +62,7 @@ export default function TranslationControls({
   return (
     <div className={compact ? "min-w-0" : "min-w-0"}>
       <div className="flex flex-wrap items-center gap-2">
+        {engineFirst && engineBadge}
         <button
           type="button"
           onClick={onClick}
@@ -75,11 +84,7 @@ export default function TranslationControls({
                 : "显示译文"
               : "翻译歌词"}
         </button>
-        {isSuccess && isVisible && (
-          <span className="rounded-full bg-surface px-2.5 py-1 text-[10px] text-muted">
-            {ENGINE_LABELS[state.engine]}
-          </span>
-        )}
+        {!engineFirst && engineBadge}
       </div>
       {state.phase === "error" && (
         <p

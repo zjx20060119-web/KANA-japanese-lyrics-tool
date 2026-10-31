@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
-def kanaVersionCode = (findProperty("kanaVersionCode") ?: "1").toString().toInteger()
-def kanaVersionName = (findProperty("kanaVersionName") ?: "1.0").toString()
+def kanaVersionCode = (findProperty("kanaVersionCode") ?: "2").toString().toInteger()
+def kanaVersionName = (findProperty("kanaVersionName") ?: "1.1.0").toString()
 
 android {
     namespace = "com.kana.furigana"

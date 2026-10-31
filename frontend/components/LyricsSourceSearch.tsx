@@ -187,9 +187,11 @@ export default function LyricsSourceSearch({
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-medium text-ink">歌词来源</h3>
-            <span className="rounded-full bg-surface px-2 py-0.5 text-[10px] text-muted">
-              {proxyEnabled ? "云端加速" : "直连 LRCLIB"}
-            </span>
+            {proxyEnabled && (
+              <span className="rounded-full bg-surface px-2 py-0.5 text-[10px] text-muted">
+                云端加速
+              </span>
+            )}
           </div>
           <p className="mt-0.5 text-xs text-muted">
             填写歌名或歌手后搜索

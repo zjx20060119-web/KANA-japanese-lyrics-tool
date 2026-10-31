@@ -137,7 +137,6 @@ export default function LyricsInput({
               rows={10}
               value={lyrics}
               onChange={(event) => onLyricsChange(event.target.value)}
-              placeholder={"在这里粘贴日语歌词…\n\n夜空に歌う\n静かな風が街を包む"}
               aria-required="true"
               aria-invalid={validationError ? "true" : "false"}
               aria-describedby={
@@ -147,8 +146,7 @@ export default function LyricsInput({
             />
           </label>
 
-          <div className="mt-1.5 flex items-center justify-between gap-3 text-xs text-muted">
-            <span>支持多行文本与空行</span>
+          <div className="mt-1.5 flex items-center justify-end text-xs text-muted">
             <span>{lyrics.length} 字符</span>
           </div>
         </fieldset>
