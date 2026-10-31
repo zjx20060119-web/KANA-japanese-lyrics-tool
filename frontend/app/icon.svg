@@ -11,18 +11,18 @@
   />
   <text
     x="32"
-    y="28"
-    fill="#ff0000"
-    font-family="Segoe UI, Arial, sans-serif"
-    font-size="13"
-    text-anchor="middle"
-  >kana</text>
-  <text
-    x="32"
-    y="49"
+    y="23"
     fill="#ff0000"
     font-family="Yu Mincho, serif"
-    font-size="18"
+    font-size="8"
     text-anchor="middle"
-  >かな</text>
+  >うた</text>
+  <text
+    x="32"
+    y="52"
+    fill="#ff0000"
+    font-family="Yu Mincho, serif"
+    font-size="29"
+    text-anchor="middle"
+  >歌</text>
 </svg>

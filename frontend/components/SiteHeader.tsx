@@ -50,8 +50,11 @@ export default function SiteHeader() {
           aria-label="KANA 首页"
           className="flex shrink-0 items-center gap-2.5"
         >
-          <span className="font-japanese grid h-8 w-8 place-items-center rounded-md bg-brand text-lg font-normal text-white">
-            歌
+          <span className="font-japanese relative grid h-8 w-8 place-items-center rounded-md border border-line bg-canvas text-brand">
+            <span className="absolute top-[2px] text-[6px] leading-none">
+              うた
+            </span>
+            <span className="mt-1.5 text-lg leading-none">歌</span>
           </span>
           <span className="hidden min-[380px]:block">
             <span className="block text-base font-bold leading-5">KANA</span>

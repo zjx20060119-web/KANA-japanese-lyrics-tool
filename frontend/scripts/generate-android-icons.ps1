@@ -17,7 +17,8 @@ function ConvertFrom-CodePoints {
     return -join ($CodePoints | ForEach-Object { [char]$_ })
 }
 
-$kanaText = ConvertFrom-CodePoints @(0x304B, 0x306A)
+$rubyText = ConvertFrom-CodePoints @(0x3046, 0x305F)
+$lyricsGlyph = ConvertFrom-CodePoints @(0x6B4C)
 $subtitleText = ConvertFrom-CodePoints @(
     0x65E5,
     0x8BED,
@@ -112,7 +113,7 @@ function Get-InkBounds {
 
 function New-SignatureArtwork {
     $canvasWidth = 1400
-    $canvasHeight = 1100
+    $canvasHeight = 1400
     $bitmap = New-Object System.Drawing.Bitmap(
         $canvasWidth,
         $canvasHeight,
@@ -128,36 +129,36 @@ function New-SignatureArtwork {
         $format = New-Object System.Drawing.StringFormat
         $format.Alignment = [System.Drawing.StringAlignment]::Center
         $format.LineAlignment = [System.Drawing.StringAlignment]::Center
-        $latinFont = New-Object System.Drawing.Font(
-            "Segoe UI",
-            232,
+        $rubyFont = New-Object System.Drawing.Font(
+            "Yu Mincho",
+            118,
             [System.Drawing.FontStyle]::Regular,
             [System.Drawing.GraphicsUnit]::Pixel
         )
-        $japaneseFont = New-Object System.Drawing.Font(
+        $lyricsFont = New-Object System.Drawing.Font(
             "Yu Mincho",
-            310,
+            690,
             [System.Drawing.FontStyle]::Regular,
             [System.Drawing.GraphicsUnit]::Pixel
         )
         try {
             $graphics.DrawString(
-                "kana",
-                $latinFont,
+                $rubyText,
+                $rubyFont,
                 $brush,
-                (New-Object System.Drawing.RectangleF(0, 80, $canvasWidth, 410)),
+                (New-Object System.Drawing.RectangleF(0, 150, $canvasWidth, 240)),
                 $format
             )
             $graphics.DrawString(
-                $kanaText,
-                $japaneseFont,
+                $lyricsGlyph,
+                $lyricsFont,
                 $brush,
-                (New-Object System.Drawing.RectangleF(0, 470, $canvasWidth, 520)),
+                (New-Object System.Drawing.RectangleF(0, 350, $canvasWidth, 850)),
                 $format
             )
         } finally {
-            $latinFont.Dispose()
-            $japaneseFont.Dispose()
+            $rubyFont.Dispose()
+            $lyricsFont.Dispose()
             $format.Dispose()
             $brush.Dispose()
         }
@@ -251,12 +252,12 @@ function New-IconBitmap {
 
         if ($Variant -eq "legacy") {
             Draw-IconShape $graphics $Size "legacy"
-            Draw-CenteredArtwork $graphics $Artwork ($Size / 2) ($Size / 2) ($Size * 0.56)
+            Draw-CenteredArtwork $graphics $Artwork ($Size / 2) ($Size / 2) ($Size * 0.64)
         } elseif ($Variant -eq "round") {
             Draw-IconShape $graphics $Size "round"
-            Draw-CenteredArtwork $graphics $Artwork ($Size / 2) ($Size / 2) ($Size * 0.52)
+            Draw-CenteredArtwork $graphics $Artwork ($Size / 2) ($Size / 2) ($Size * 0.60)
         } else {
-            Draw-CenteredArtwork $graphics $Artwork ($Size / 2) ($Size / 2) ($Size * 0.42)
+            Draw-CenteredArtwork $graphics $Artwork ($Size / 2) ($Size / 2) ($Size * 0.48)
         }
     } finally {
         $graphics.Dispose()
@@ -320,7 +321,7 @@ function New-SplashBitmap {
             $fill.Dispose()
             $path.Dispose()
         }
-        Draw-CenteredArtwork $graphics $Artwork ($Width / 2) ($Height / 2) ($iconSize * 0.56)
+        Draw-CenteredArtwork $graphics $Artwork ($Width / 2) ($Height / 2) ($iconSize * 0.64)
     } finally {
         $graphics.Dispose()
     }
@@ -482,4 +483,4 @@ try {
     $artwork.Bitmap.Dispose()
 }
 
-Write-Host "Android icons and brand assets generated with centered kana artwork."
+Write-Host "Android icons and brand assets generated with centered furigana artwork."
